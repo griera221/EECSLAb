@@ -1,23 +1,16 @@
 #!/usr/bin/env python
-# The line above tells Linux that this file is a Python script, and that the OS
-# should use the Python interpreter in /usr/bin/env to run it. Don't forget to
-# use "chmod +x [filename]" to make this script executable.
-
-# Import the rospy package. For an import to work, it must be specified
-# in both the package manifest AND the Python file in which it is used.
 import rospy
 
-# Import the String message type from the /msg directory of the std_msgs package.
 from std_msgs.msg import String
 
-# Define the method which contains the node's main functionality
+from my_chatter.msg import TimestampString
+
 def talker():
 
     # Create an instance of the rospy.Publisher object which we can  use to
     # publish messages to a topic. This publisher publishes messages of type
     # std_msgs/String to the topic /chatter_talk
-    pub = rospy.Publisher('chatter_talk', String, queue_size=10)
-    
+    pub = rospy.Publisher('user_messages', TimestampString, queue_size=10)
     # Create a timer object that will sleep long enough to result in a 10Hz
     # publishing rate
     r = rospy.Rate(10) # 10hz
@@ -26,11 +19,16 @@ def talker():
     while not rospy.is_shutdown():
         # Construct a string that we want to publish (in Python, the "%"
         # operator functions similarly to sprintf in C or MATLAB)
-        pub_string = "hello world %s" % (rospy.get_time())
+        print('Please enter a line of text and press <Enter>: ')
+        x = input()
+        message_sent = TimestampString()
+        message_sent.user_input = x 
+        message_sent.msg_timestamp = rospy.get_time()
         
         # Publish our string to the 'chatter_talk' topic
-        pub.publish(pub_string)
-        print(rospy.get_name() + ": I sent \"%s\"" % pub_string)
+        pub.publish(message_sent)
+        #print(rospy.get_name() + ": I sent \"%s\"" % pub_string)
+        print("User sent:", message_sent.user_input, "at time:", message_sent.msg_timestamp)
         
         # Use our rate object to sleep until it is time to publish again
         r.sleep()
@@ -47,3 +45,4 @@ if __name__ == '__main__':
     try:
         talker()
     except rospy.ROSInterruptException: pass
+
