@@ -2,23 +2,26 @@
 from geometry_msgs.msg import Twist
 import numpy as np
 import rospy
+import sys
 from std_srvs.srv import Empty
 from turtle_patrol.srv import Patrol  # Service type
 from turtlesim.srv import TeleportAbsolute
 
+turtle_name = sys.argv[1]
 
 def patrol_callback(request):
+    #turtle_name = sys.argv[1]
     rospy.wait_for_service('clear')
-    rospy.wait_for_service('/turtle1/teleport_absolute')
+    rospy.wait_for_service('/' +turtle_name +'/teleport_absolute')
     clear_proxy = rospy.ServiceProxy('clear', Empty)
     teleport_proxy = rospy.ServiceProxy(
-        '/turtle1/teleport_absolute',
+        '/' + turtle_name + '/teleport_absolute',
         TeleportAbsolute
     )
     vel = request.vel  # Linear velocity
     omega = request.omega  # Angular velocity
     pub = rospy.Publisher(
-        '/turtle1/cmd_vel', Twist, queue_size=50)
+       '/' + turtle_name+  '/cmd_vel', Twist, queue_size=50)
     cmd = Twist()
     cmd.linear.x = vel
     cmd.angular.z = omega
@@ -35,10 +38,10 @@ def patrol_callback(request):
 
 def patrol_server():
     # Initialize the server node for turtle1
-    rospy.init_node('turtle1_patrol_server')
+    rospy.init_node(turtle_name + '_patrol_server')
     # Register service
     rospy.Service(
-        '/turtle1/patrol',  # Service name
+        '/' + turtle_name + '/patrol',  # Service name
         Patrol,  # Service type
         patrol_callback  # Service callback
     )
